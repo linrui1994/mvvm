@@ -8,5 +8,21 @@ export default function mvvm (options) {
   console.log(this.$el)
   /* eslint-disable no-new */
   new Observer(this.$data)
+  _proxy(this)
   new Complier(this, this.$el)
+}
+
+function _proxy (context) {
+  Object.keys(context.$data).forEach(key => {
+    Object.defineProperty(context, key, {
+      configurable: true,
+      enumerable: true,
+      get: () => context.$data[key],
+      set: newval => {
+        if (context.$data[key] !== newval) {
+          context.$data[key] = newval
+        }
+      }
+    })
+  })
 }

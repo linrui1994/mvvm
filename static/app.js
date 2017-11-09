@@ -819,27 +819,40 @@ module.exports = { "default": __webpack_require__(80), __esModule: true };
 
 "use strict";
 /* harmony export (immutable) */ __webpack_exports__["a"] = defineReactive;
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_define_property__ = __webpack_require__(43);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_define_property___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_define_property__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__watcher_dep__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_keys__ = __webpack_require__(49);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_keys___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_keys__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_typeof__ = __webpack_require__(57);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_typeof___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_typeof__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_babel_runtime_core_js_object_define_property__ = __webpack_require__(43);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_babel_runtime_core_js_object_define_property___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_babel_runtime_core_js_object_define_property__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__watcher_dep__ = __webpack_require__(31);
+
+
 
 
 
 function defineReactive(obj, key, val) {
-  var dep = new __WEBPACK_IMPORTED_MODULE_1__watcher_dep__["a" /* default */]();
-  __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_define_property___default()(obj, key, {
+  var dep = new __WEBPACK_IMPORTED_MODULE_3__watcher_dep__["a" /* default */]();
+  console.log(key);
+  __WEBPACK_IMPORTED_MODULE_2_babel_runtime_core_js_object_define_property___default()(obj, key, {
     enumerable: true,
-    configurable: false,
+    configurable: false, // 不可以被多次define
     get: function get() {
-      if (__WEBPACK_IMPORTED_MODULE_1__watcher_dep__["a" /* default */].target) {
+      if (__WEBPACK_IMPORTED_MODULE_3__watcher_dep__["a" /* default */].target) {
         console.log('添加？？');
-        dep.addSub(__WEBPACK_IMPORTED_MODULE_1__watcher_dep__["a" /* default */].target); // 当Dep的静态变量target不为空时 添加订阅
+        dep.addSub(__WEBPACK_IMPORTED_MODULE_3__watcher_dep__["a" /* default */].target); // 当Dep的静态变量target不为空时 添加订阅
       }
       return val;
     },
     set: function set(newval) {
       if (val === newval) {
         return;
+      }
+      // 在重新赋值为对象时需要重新设置getter和setter
+      if ((typeof val === 'undefined' ? 'undefined' : __WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_typeof___default()(val)) === 'object') {
+        __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_keys___default()(val).forEach(function (key) {
+          defineReactive(val, key, val[key]);
+        });
       }
       val = newval;
       console.log(newval, 'update');
@@ -861,6 +874,10 @@ var vm = new __WEBPACK_IMPORTED_MODULE_0__mvvm__["a" /* default */]({
   el: '#mvvm',
   data: {
     user: {
+      account: {
+        username: 123,
+        password: 234
+      },
       name: 'lin',
       age: 22
     }
@@ -875,8 +892,14 @@ window.vm = vm;
 
 "use strict";
 /* harmony export (immutable) */ __webpack_exports__["a"] = mvvm;
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observer__ = __webpack_require__(47);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__complier__ = __webpack_require__(82);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_define_property__ = __webpack_require__(43);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_define_property___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_define_property__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_babel_runtime_core_js_object_keys__ = __webpack_require__(49);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_babel_runtime_core_js_object_keys___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_babel_runtime_core_js_object_keys__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Observer__ = __webpack_require__(47);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__complier__ = __webpack_require__(82);
+
+
 
 
 
@@ -886,8 +909,26 @@ function mvvm(options) {
   this.$el = options.el;
   console.log(this.$el);
   /* eslint-disable no-new */
-  new __WEBPACK_IMPORTED_MODULE_0__Observer__["a" /* Observer */](this.$data);
-  new __WEBPACK_IMPORTED_MODULE_1__complier__["a" /* Complier */](this, this.$el);
+  new __WEBPACK_IMPORTED_MODULE_2__Observer__["a" /* Observer */](this.$data);
+  _proxy(this);
+  new __WEBPACK_IMPORTED_MODULE_3__complier__["a" /* Complier */](this, this.$el);
+}
+
+function _proxy(context) {
+  __WEBPACK_IMPORTED_MODULE_1_babel_runtime_core_js_object_keys___default()(context.$data).forEach(function (key) {
+    __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_define_property___default()(context, key, {
+      configurable: true,
+      enumerable: true,
+      get: function get() {
+        return context.$data[key];
+      },
+      set: function set(newval) {
+        if (context.$data[key] !== newval) {
+          context.$data[key] = newval;
+        }
+      }
+    });
+  });
 }
 
 /***/ }),
@@ -937,12 +978,12 @@ var Observer = function () {
       if ((typeof data === 'undefined' ? 'undefined' : __WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_typeof___default()(data)) !== 'object') {
         return;
       }
+      typeof data === 'function' && (data = data());
       __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_keys___default()(data).forEach(function (key) {
         if (__WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_typeof___default()(data[key]) === 'object') {
           _this.observe(data[key]);
-        } else {
-          Object(__WEBPACK_IMPORTED_MODULE_4__defineReactive__["a" /* defineReactive */])(data, key, data[key]);
         }
+        Object(__WEBPACK_IMPORTED_MODULE_4__defineReactive__["a" /* defineReactive */])(data, key, data[key]);
       });
     }
   }]);
@@ -1731,6 +1772,8 @@ $export($export.S + $export.F * !__webpack_require__(5), 'Object', { definePrope
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_babel_runtime_helpers_createClass__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_babel_runtime_helpers_createClass___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_babel_runtime_helpers_createClass__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__watcher__ = __webpack_require__(93);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__utils__ = __webpack_require__(95);
+
 
 
 
@@ -1742,6 +1785,7 @@ var Complier = function () {
 
     this.el = el;
     this.vm = vm;
+    this.$scope = vm.$data;
     var fragment = this.nodeToFragment(el);
     this.complie(fragment);
     document.querySelector(this.el).appendChild(fragment);
@@ -1804,16 +1848,18 @@ var Complier = function () {
         /* eslint-disable no-new */
         var args = exp.split('+');
         var _args = args.map(function (arg) {
-          // arg = arg.trim()
           var regStr = /(^['"](.*?))|((.*?)['"]$)/; // 匹配字符串表达式 剩余的为真正的js代码片段
           if (regStr.test(arg)) {
             // 普通字符串
             return arg;
           } else {
-            return 'this.vm.$data.' + arg.trim();
+            return {
+              js: 'this.$scope.' + arg.trim()
+            };
           }
         });
-        new __WEBPACK_IMPORTED_MODULE_3__watcher__["a" /* default */](this.vm, _args.join('+'), function (val) {
+        var _exp = Object(__WEBPACK_IMPORTED_MODULE_4__utils__["a" /* joinExp */])(_args);
+        new __WEBPACK_IMPORTED_MODULE_3__watcher__["a" /* default */](this.vm, _exp, function (val) {
           console.log('update fn');
           node.textContent = val;
         });
@@ -1827,32 +1873,27 @@ var Complier = function () {
         return;
       }
       var texts = node.textContent.split(/(\{\{.*?\}\})/);
-      var _exp = '';
+      var codes = [];
       texts.forEach(function (text) {
         if (textReg.test(text)) {
           var exp = RegExp.$1.trim();
           var args = exp.split('+');
-          var _args = args.map(function (arg) {
-            // arg = arg.trim()
+          codes = codes.concat(args.map(function (arg) {
             var regStr = /(^['"](.*?))|((.*?)['"]$)/; // 匹配字符串表达式 剩余的为真正的js代码片段
             if (regStr.test(arg)) {
               // 普通字符串
               return arg;
             } else {
-              return 'this.vm.$data.' + arg;
+              return {
+                js: 'this.$scope.' + arg.trim()
+              };
             }
-          });
-          if (_exp) {
-            _exp += '+';
-          }
-          _exp += _args.join('+');
+          }));
         } else {
-          if (_exp) {
-            _exp += '+';
-          }
-          _exp += '"' + text + '"';
+          codes.push(text);
         }
       });
+      var _exp = Object(__WEBPACK_IMPORTED_MODULE_4__utils__["a" /* joinExp */])(codes);
       new __WEBPACK_IMPORTED_MODULE_3__watcher__["a" /* default */](this.vm, _exp, function (val) {
         node.textContent = val;
       });
@@ -2073,6 +2114,7 @@ var Watcher = function () {
 
     console.log('跑了', exp);
     this.vm = vm;
+    this.$scope = vm.$data;
     this.exp = exp;
     this.fn = fn;
     /* eslint-disable no-new-func */
@@ -2093,9 +2135,9 @@ var Watcher = function () {
   }, {
     key: 'get',
     value: function get() {
-      var value = this.execFunc();
+      var value = this.execFunc(); // 这里会存在类似this.vm.$data.user.name的js代码 会触发getter 如果此时的Dep.target不为空 便往dep上添加订阅
       console.log(value);
-      this.value = value; // 这里触发getter 如果此时的Dep.target不为空 便往dep上添加订阅
+      this.value = value;
       return value;
     }
   }]);
@@ -2104,6 +2146,60 @@ var Watcher = function () {
 }();
 
 /* harmony default export */ __webpack_exports__["a"] = (Watcher);
+
+/***/ }),
+/* 95 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = joinExp;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_json_stringify__ = __webpack_require__(96);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_json_stringify___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_json_stringify__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_typeof__ = __webpack_require__(57);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_typeof___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_typeof__);
+
+
+function joinExp(arr) {
+  if (!arr || !Array.isArray(arr)) {
+    return '';
+  } else {
+    var exp = '';
+    arr.forEach(function (strObj) {
+      if (!strObj) {
+        return;
+      }
+      if ((typeof strObj === 'undefined' ? 'undefined' : __WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_typeof___default()(strObj)) === 'object') {
+        if (exp) {
+          exp += '+';
+        }
+        exp += strObj.js;
+      } else {
+        if (exp) {
+          exp += '+';
+        }
+        /(^['"](.*?))|((.*?)['"]$)/.test(strObj) ? exp += strObj : exp += __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_json_stringify___default()(strObj);
+      }
+    });
+    return exp;
+  }
+}
+
+/***/ }),
+/* 96 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(97), __esModule: true };
+
+/***/ }),
+/* 97 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var core = __webpack_require__(2);
+var $JSON = core.JSON || (core.JSON = { stringify: JSON.stringify });
+module.exports = function stringify(it) { // eslint-disable-line no-unused-vars
+  return $JSON.stringify.apply($JSON, arguments);
+};
+
 
 /***/ })
 /******/ ]);

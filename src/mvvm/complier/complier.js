@@ -1,9 +1,11 @@
 import Watcher from '../watcher'
+import {joinExp} from '../utils'
 
 export default class Complier {
   constructor (vm, el) {
     this.el = el
     this.vm = vm
+    this.$scope = vm.$data
     const fragment = this.nodeToFragment(el)
     this.complie(fragment)
     document.querySelector(this.el).appendChild(fragment)
@@ -52,16 +54,18 @@ export default class Complier {
       /* eslint-disable no-new */
       const args = exp.split('+')
       const _args = args.map(arg => {
-        // arg = arg.trim()
         const regStr = /(^['"](.*?))|((.*?)['"]$)/ // 匹配字符串表达式 剩余的为真正的js代码片段
         if (regStr.test(arg)) {
           // 普通字符串
           return arg
         } else {
-          return 'this.vm.$data.' + arg.trim()
+          return {
+            js: 'this.$scope.' + arg.trim()
+          }
         }
       })
-      new Watcher(this.vm, _args.join('+'), val => {
+      const _exp = joinExp(_args)
+      new Watcher(this.vm, _exp, val => {
         console.log('update fn')
         node.textContent = val
       })
@@ -73,32 +77,27 @@ export default class Complier {
       return
     }
     const texts = node.textContent.split(/(\{\{.*?\}\})/)
-    let _exp = ''
+    let codes = []
     texts.forEach(text => {
       if (textReg.test(text)) {
         const exp = RegExp.$1.trim()
         const args = exp.split('+')
-        const _args = args.map(arg => {
-          // arg = arg.trim()
+        codes = codes.concat(args.map(arg => {
           const regStr = /(^['"](.*?))|((.*?)['"]$)/ // 匹配字符串表达式 剩余的为真正的js代码片段
           if (regStr.test(arg)) {
             // 普通字符串
             return arg
           } else {
-            return 'this.vm.$data.' + arg
+            return {
+              js: 'this.$scope.' + arg.trim()
+            }
           }
-        })
-        if (_exp) {
-          _exp += '+'
-        }
-        _exp += _args.join('+')
+        }))
       } else {
-        if (_exp) {
-          _exp += '+'
-        }
-        _exp += ('"' + text + '"')
+        codes.push(text)
       }
     })
+    const _exp = joinExp(codes)
     new Watcher(this.vm, _exp, val => {
       node.textContent = val
     })

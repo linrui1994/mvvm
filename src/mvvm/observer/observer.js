@@ -8,12 +8,12 @@ export default class Observer {
     if (typeof data !== 'object') {
       return
     }
+    typeof data === 'function' && (data = data())
     Object.keys(data).forEach(key => {
       if (typeof data[key] === 'object') {
         this.observe(data[key])
-      } else {
-        defineReactive(data, key, data[key])
       }
+      defineReactive(data, key, data[key])
     })
   }
 }
