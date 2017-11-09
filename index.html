@@ -5,12 +5,20 @@
     <title>lv</title>
   </head>
   <body>
-  	<div id='mvvm'>
-  		<div>
-  			<p>{{user.name}}</p>
-  		</div>
-  		<p v-text='user.age'></p>
-  	</div>
+    <div id='mvvm'>
+      123
+      <div>
+        1
+        <p>name: {{user.name}} age: {{user.age}}</p>
+        <ul>
+          <li v-text='user.age + "岁"'></li>
+          <li v-text='user.name + "是名字"'></li>
+        </ul>
+      </div>
+      <p v-text='user.age'></p>
+      <span>{{user.name + user.age + '岁'}}</span>
+    </div>
+    <div id="app"></div>
     <!-- built files will be auto injected -->
   </body>
 </html>

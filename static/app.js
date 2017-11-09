@@ -1744,7 +1744,6 @@ var Complier = function () {
     this.vm = vm;
     var fragment = this.nodeToFragment(el);
     this.complie(fragment);
-    console.log(this.el);
     document.querySelector(this.el).appendChild(fragment);
   }
 
@@ -1768,7 +1767,7 @@ var Complier = function () {
       var childNodes = node.childNodes || [];
       __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_array_from___default()(childNodes).forEach(function (_node) {
         if (_node.childNodes && _node.childNodes.length) {
-          _this.complie(_node.childNodes);
+          _this.complie(_node);
           _this.complieElement(_node);
         } else {
           if (_node.nodeType === 1) {
@@ -1797,18 +1796,25 @@ var Complier = function () {
           _this2.resolveDirective(directiveName, exp, node);
         }
       });
-      var textContent = node.textContent;
-      var textReg = /\{\{(.*?)\}\}/;
-      if (textReg.test(textContent)) {
-        this.complieText(node);
-      }
     }
   }, {
     key: 'resolveDirective',
     value: function resolveDirective(name, exp, node) {
       if (name === 'text') {
         /* eslint-disable no-new */
-        new __WEBPACK_IMPORTED_MODULE_3__watcher__["a" /* default */](this.vm, exp, function (val) {
+        var args = exp.split('+');
+        var _args = args.map(function (arg) {
+          // arg = arg.trim()
+          var regStr = /(^['"](.*?))|((.*?)['"]$)/; // 匹配字符串表达式 剩余的为真正的js代码片段
+          if (regStr.test(arg)) {
+            // 普通字符串
+            return arg;
+          } else {
+            return 'this.vm.$data.' + arg.trim();
+          }
+        });
+        new __WEBPACK_IMPORTED_MODULE_3__watcher__["a" /* default */](this.vm, _args.join('+'), function (val) {
+          console.log('update fn');
           node.textContent = val;
         });
       }
@@ -1816,17 +1822,40 @@ var Complier = function () {
   }, {
     key: 'complieText',
     value: function complieText(node) {
-      var textReg = /\{\{(.*?)\}\}/; // 采用非贪婪模式
-      if (textReg.test(node.textContent)) {
-        var exp = RegExp.$1; // 获取匹配表达式
-        exp = exp.trim();
-        /* eslint-disable no-new */
-        new __WEBPACK_IMPORTED_MODULE_3__watcher__["a" /* default */](this.vm, exp, function (val) {
-          console.log('pao', val);
-          node.textContent = node.textContent.replace(textReg, val);
-          textReg = new RegExp(val);
-        });
+      var textReg = /\{\{(.*?)\}\}/g; // 采用非贪婪模式
+      if (!textReg.test(node.textContent)) {
+        return;
       }
+      var texts = node.textContent.split(/(\{\{.*?\}\})/);
+      var _exp = '';
+      texts.forEach(function (text) {
+        if (textReg.test(text)) {
+          var exp = RegExp.$1.trim();
+          var args = exp.split('+');
+          var _args = args.map(function (arg) {
+            // arg = arg.trim()
+            var regStr = /(^['"](.*?))|((.*?)['"]$)/; // 匹配字符串表达式 剩余的为真正的js代码片段
+            if (regStr.test(arg)) {
+              // 普通字符串
+              return arg;
+            } else {
+              return 'this.vm.$data.' + arg;
+            }
+          });
+          if (_exp) {
+            _exp += '+';
+          }
+          _exp += _args.join('+');
+        } else {
+          if (_exp) {
+            _exp += '+';
+          }
+          _exp += '"' + text + '"';
+        }
+      });
+      new __WEBPACK_IMPORTED_MODULE_3__watcher__["a" /* default */](this.vm, _exp, function (val) {
+        node.textContent = val;
+      });
     }
   }]);
 
@@ -2046,6 +2075,9 @@ var Watcher = function () {
     this.vm = vm;
     this.exp = exp;
     this.fn = fn;
+    /* eslint-disable no-new-func */
+    this.execFunc = new Function('return ' + this.exp);
+    console.log(this.execFunc, exp);
     __WEBPACK_IMPORTED_MODULE_2__dep__["a" /* default */].target = this; // 在Dep的静态变量上绑定wather
     this.update();
     __WEBPACK_IMPORTED_MODULE_2__dep__["a" /* default */].target = null;
@@ -2061,12 +2093,9 @@ var Watcher = function () {
   }, {
     key: 'get',
     value: function get() {
-      var keys = this.exp.split('.');
-      var value = this.vm.$data;
-      for (var key in keys) {
-        value = value[keys[key]];
-      }
-      this.value = value; // 这里触发getter 从而往dep上添加订阅
+      var value = this.execFunc();
+      console.log(value);
+      this.value = value; // 这里触发getter 如果此时的Dep.target不为空 便往dep上添加订阅
       return value;
     }
   }]);
