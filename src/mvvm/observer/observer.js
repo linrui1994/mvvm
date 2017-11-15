@@ -1,4 +1,5 @@
 import { defineReactive } from './defineReactive'
+import { arrayDefineReactive } from './arrayDefineReactive'
 
 export default class Observer {
   constructor (data) {
@@ -11,7 +12,12 @@ export default class Observer {
     typeof data === 'function' && (data = data())
     Object.keys(data).forEach(key => {
       if (typeof data[key] === 'object') {
-        this.observe(data[key])
+        if (Array.isArray(data[key])) {
+          // 数组需要特殊处理
+
+        } else {
+          this.observe(data[key])
+        }
       }
       defineReactive(data, key, data[key])
     })
