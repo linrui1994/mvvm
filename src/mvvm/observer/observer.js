@@ -1,5 +1,5 @@
 import { defineReactive } from './defineReactive'
-import { arrayDefineReactive } from './arrayDefineReactive'
+// import { arrayDefineReactive } from './arrayDefineReactive'
 
 export default class Observer {
   constructor (data) {

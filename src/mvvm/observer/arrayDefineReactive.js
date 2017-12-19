@@ -1,1 +1,1 @@
-const methods = ['push', 'pop', ]
+// const methods = ['push', 'pop', ]
