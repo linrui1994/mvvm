@@ -18,7 +18,9 @@
       <p v-text='user.age'></p>
       <span>{{user.name + user.age + '岁'}}</span>
       <p>{{user.account.username + user.account.password}}</p>
-
+      <div v-for='item in lists'>
+        <p>{{item}}</p>
+      </div>
     </div>
     <div id="app"></div>
     <!-- built files will be auto injected -->

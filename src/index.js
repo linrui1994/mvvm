@@ -9,7 +9,8 @@ const vm = new MVVM({
         password: 234
       },
       name: 'lin',
-      age: 22
+      age: 22,
+      list: ['lin', 'liu', 'chai']
     }
   }
 })
